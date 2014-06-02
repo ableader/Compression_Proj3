@@ -75,10 +75,12 @@ int main()
 				// and input the content into the file
 				infile = fstream(filename1);
 				infile << input;
+				infile.close();
+				infile = fstream(filename1);
 			}
 
 			// Create a second file to take in the output of whatever operation we perform
-			filename2 = filename1 + ".result";
+			filename2 = filename1 + "-c";
 			createFile(filename2);
 			// Open new filestream for output file
 			fstream outfile(filename2);
@@ -98,8 +100,8 @@ int main()
 				cout << "Starting Huff Operation: \n\n";
 				Huffman h;
 				h.buildHuffman(infile);
-				h.displayTree();
-				h.displayTable();
+				//h.displayTree();
+				//h.displayTable();
 				resultToWrite = h.encode(infile);
 			}
 
@@ -145,6 +147,8 @@ int main()
 			// Write the resulting string into outfile
 			// We include this within the loop
 			outfile << resultToWrite;
+			infile.close();
+			outfile.close();
 
 			// Analysis of result of program
 			float time_elapsed = (double)((end - begin) / CLOCKS_PER_SEC) / LOOP_TIMES;
@@ -153,12 +157,16 @@ int main()
 			float percentChange;
 
 			// Obtain size of infile
-			infile.seekg(0, ifstream::end);
+			infile = fstream(filename1);
+			infile.seekg(0, fstream::end);
 			infileSize = infile.tellg();
+			infile.close();
 
 			// Obtain size of outfile
-			outfile.seekg(0, ifstream::end);
+			outfile = fstream(filename2);
+			outfile.seekg(0, fstream::end);
 			outfileSize = outfile.tellg();
+			outfile.close();
 
 			// Calculate change from original file to new file
 			percentChange = (1 - outfileSize / infileSize) * 100;

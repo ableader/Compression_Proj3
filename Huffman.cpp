@@ -21,8 +21,18 @@ void Huffman::buildHuffman(fstream & input)
 			frequencyTable[c]++;
 		}
 	}
+
 	// Add in artificial end of file symbol
 	frequencyTable[EOF] = 1;
+
+	/*
+	int sum = 0;
+	for (auto it = frequencyTable.begin(); it != frequencyTable.end(); ++it){
+		sum += it->second;
+		cout << it->first << ": " << it->second << ": " << sum << "\n";
+	}
+	cout << "Total sum of symbols: " << sum << "\n";
+	*/
 
 	// Reset pointer in filestream
 	input.clear();
@@ -146,8 +156,6 @@ string Huffman::encode(fstream & input)
 		}
 	}
 
-	cout << BITS.size / 8 << " " << BITS.BITS.size() / 8 << "\n";
-
 	// Add artificial end of symbol
 	Bits endBITS = encodingTable[EOF];
 	BITS.mergeBits(endBITS);
@@ -182,16 +190,20 @@ string Huffman::decode(fstream & input)
 	string resultToWrite;
 	Bits BITS = Bits();
 
-	while (input.good()){
-		char c = input.get();
-		if (input.good())
-			BITS.addChar(c);
+	int count = 0;
+
+	// PROBLEM IS HERE
+	char c;
+	while (input.get(c))
+	{
+		BITS.addChar(c);
 	}
+	
+	cout << "count result: ";
+	cout << count << " " << BITS.size / 8 << "\n";
 
 	buildDecodingTree(rootNode, BITS);
 	displayTree();
-
-	BITS.displayRemainingBits();
 
 	NodePointer pointer = rootNode;
 	while (1){
