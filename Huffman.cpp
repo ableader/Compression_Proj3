@@ -2,13 +2,13 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <unordered_map>
+#include <tr1/unordered_map>
 using namespace std;
 #include "Huffman.h"
 //--- Definition of buildDecodingTree()
 void Huffman::buildHuffmanTree(stringstream & input)
 {
-	unordered_map<char, int> frequencyTable = unordered_map<char, int>();
+	std::tr1::unordered_map<char, int> frequencyTable = std::tr1::unordered_map<char, int>();
 	/*while (input.get())
 	{
 		char c = input.get();

@@ -4,6 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <time.h>
+#include <stdlib.h>
 using namespace std;
 #include "Huffman.h"
 
