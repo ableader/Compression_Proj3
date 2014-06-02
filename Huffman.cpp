@@ -2,59 +2,223 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <queue>
+#include <vector>
+#include <bitset>
 #include <unordered_map>
 using namespace std;
 #include "Huffman.h"
-//--- Definition of buildDecodingTree()
-void Huffman::buildHuffmanTree(stringstream & input)
+#define EOF -1
+
+void Huffman::buildHuffman(fstream & input)
 {
+	// Obtain frequencies of all chars from filestream
 	unordered_map<char, int> frequencyTable = unordered_map<char, int>();
-	/*while (input.get())
+	while (input.good())
 	{
 		char c = input.get();
 		if (input.good()) {
 			frequencyTable[c]++;
 		}
 	}
-	*/
-	std::cout << "mymap contains:";
-	for (auto it = frequencyTable.begin(); it != frequencyTable.end(); ++it)
-		std::cout << " " << it->first << ":" << it->second;
-	std::cout << std::endl;
+	// Add in artificial end of file symbol
+	frequencyTable[EOF] = 1;
+
+	// Reset pointer in filestream
+	input.clear();
+	input.seekg(0);
+	
+	// Create leaf Nodes for each char
+	priority_queue<Node*, vector<Node*>, MyComparator > pq;
+	for (auto it = frequencyTable.begin(); it != frequencyTable.end(); ++it){
+		pq.push(new Node(it->first, it->second));
+	}
+
+	// Populate binary tree
+	while (pq.size() > 1){
+		NodePointer nodeOne = pq.top();
+		int nodeOneFrequency = nodeOne->frequency;
+
+		pq.pop();
+		NodePointer nodeTwo = pq.top();
+		int nodeTwoFrequency = nodeTwo->frequency;
+
+		pq.pop();
+		// Create internal node
+		NodePointer newNode = new Node('-', nodeOneFrequency + nodeTwoFrequency);
+
+		//cout << newNode->frequency << "\n";
+		newNode->left = nodeOne;
+		newNode->right = nodeTwo;
+
+		// Push internal node back onto priority queue
+		pq.push(newNode);
+	}
+
+	// Set root of binary tree
+	NodePointer topNode = pq.top();
+	rootNode = topNode;
+
+	// Build encoding table
+	buildEncodingTable(rootNode, Bits());
 }
 
-//--- Definition of decode()
-void Huffman::decode(ifstream & messageIn)
+void Huffman::buildEncodingTable(Huffman::NodePointer np, Bits BITS) {
+	if (np->left != NULL){
+		Bits leftBITS = BITS;
+		Bits rightBITS = BITS;
+
+		leftBITS.addBit(0);
+		rightBITS.addBit(1);
+
+		buildEncodingTable(np->left, leftBITS);
+		buildEncodingTable(np->right, rightBITS);
+	}
+	else {
+		encodingTable[np->data] = BITS;
+	}
+};
+
+void Huffman::printTree(Huffman::NodePointer np, int offset)
 {
-	char bit; // next message bit
-	Huffman::NodePointer p; // pointer to trace path in decoding tree
-	for (;;)
+	if (np){
+		printTree(np->right, offset + 4);
+		cout << setw(offset) << ' ' << np->data << "\n";
+		printTree(np->left, offset + 4);
+	}
+}
+
+void Huffman::displayTree()
+{
+	cout << "Huffman Binary Tree\n";
+	cout << "-------------------\n\n";
+	printTree(rootNode, 0);
+	cout << "\n";
+}
+
+void Huffman::displayTable() {
+	cout << "Huffman Encoding Table\n";
+	cout << "-------------------\n\n";
+	for (auto it = encodingTable.begin(); it != encodingTable.end(); ++it){
+		cout << it->first << ": ";
+		it->second.displayBits();
+		cout << "\n";
+	}
+	cout << "\n";
+};
+
+Huffman::Bits Huffman::encodeTree(NodePointer np, Bits BITS){
+	Bits returnBITS = BITS;
+
+	if (np->left != NULL){
+		returnBITS.addBit(0);
+
+		returnBITS = encodeTree(np->left, returnBITS);
+		returnBITS = encodeTree(np->right, returnBITS);
+	}
+	else {
+		returnBITS.addBit(1);
+		returnBITS.addChar(np->data);
+	}
+
+	return returnBITS;
+};
+
+string Huffman::encode(fstream & input)
+{
+	string code;
+	Bits BITS = Bits();
+	char charToAdd;
+
+	// Magic number to add
+	charToAdd = 13;
+	BITS.addChar(charToAdd);
+
+	// Encode Huffman Tree
+	BITS.mergeBits(encodeTree(rootNode, Bits()));
+
+	// Encode message
+	while (input.good())
 	{
-		p = myRoot;
-		while (p->left != 0 || p->right != 0)
-		{
-			messageIn >> bit;
-			if (messageIn.eof()) return;
-			cout << bit;
-			if (bit == '0')
-				p = p->left;
-			else if (bit == '1')
-				p = p->right;
-			else
-				cerr << "Illegal bit: " << bit << " -- ignored\n";
+		char c = input.get();
+		if (input.good()) {
+			BITS.mergeBits(encodingTable[c]);
 		}
-		cout << "--" << p->data << endl;
+	}
+
+	cout << BITS.size / 8 << " " << BITS.BITS.size() / 8 << "\n";
+
+	// Add artificial end of symbol
+	Bits endBITS = encodingTable[EOF];
+	BITS.mergeBits(endBITS);
+
+	// Convert binary bits into chars to be transferred back into string
+	while (BITS.good()){
+		code.push_back(BITS.getChar());
+	}
+
+	// Reset pointer in filestream
+	input.clear();
+	input.seekg(0);
+
+	return code;
+}
+
+void Huffman::buildDecodingTree(NodePointer np, Bits & BITS) {
+	//BITS.displayBits();
+	if (BITS.getBit()) {
+		np->data = BITS.getChar();
+	}
+	else {
+		np->left = new Node('-');
+		buildDecodingTree(np->left, BITS);
+		np->right = new Node('-');
+		buildDecodingTree(np->right, BITS);
 	}
 }
 
-//--- Definition of printTree()
-void Huffman::printTree(ostream & out, Huffman::NodePointer root,
-	int indent)
+string Huffman::decode(fstream & input)
 {
-	if (root != 0)
-	{
-		printTree(out, root->right, indent + 8);
-		out << setw(indent) << " " << root->data << endl;
-		printTree(out, root->left, indent + 8);
+	string resultToWrite;
+	Bits BITS = Bits();
+
+	while (input.good()){
+		char c = input.get();
+		if (input.good())
+			BITS.addChar(c);
 	}
+
+	buildDecodingTree(rootNode, BITS);
+	displayTree();
+
+	BITS.displayRemainingBits();
+
+	NodePointer pointer = rootNode;
+	while (1){
+		if (pointer->left == NULL || pointer->right == NULL){
+			char c = pointer->data;
+			if (c == EOF){
+				break;
+			};
+			resultToWrite.push_back(c);
+			pointer = rootNode;
+		}
+		else {
+			if (BITS.getBit()){
+				pointer = pointer->right;
+			}
+			else{
+				pointer = pointer->left;
+			}
+		}
+
+		//cout << resultToWrite << "\n";
+	}
+
+	// Reset pointer in filestream
+	input.clear();
+	input.seekg(0);
+
+	return resultToWrite;
 }
+
