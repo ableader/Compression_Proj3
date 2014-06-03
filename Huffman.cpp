@@ -1,4 +1,3 @@
-#include <string>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -8,7 +7,8 @@
 #include <tr1/unordered_map>
 using namespace std;
 #include "Huffman.h"
-#define EOF -1
+#define EOF 3
+#define DISPLAY_FREQUENCY_TABLE false
 
 void Huffman::buildHuffman(fstream & input)
 {
@@ -25,14 +25,14 @@ void Huffman::buildHuffman(fstream & input)
 	// Add in artificial end of file symbol
 	frequencyTable[EOF] = 1;
 
-	/*
-	int sum = 0;
-	for (auto it = frequencyTable.begin(); it != frequencyTable.end(); ++it){
-		sum += it->second;
-		cout << it->first << ": " << it->second << ": " << sum << "\n";
+	if (DISPLAY_FREQUENCY_TABLE){
+		int sum = 0;
+		for (auto it = frequencyTable.begin(); it != frequencyTable.end(); ++it){
+			sum += it->second;
+			cout << it->first << ": " << it->second << ": " << sum << "\n";
+		}
+		cout << "Total sum of symbols: " << sum << "\n";
 	}
-	cout << "Total sum of symbols: " << sum << "\n";
-	*/
 
 	// Reset pointer in filestream
 	input.clear();
@@ -136,9 +136,8 @@ Huffman::Bits Huffman::encodeTree(NodePointer np, Bits BITS){
 	return returnBITS;
 };
 
-string Huffman::encode(fstream & input)
+void Huffman::encode(fstream & input, fstream & output)
 {
-	string code;
 	Bits BITS = Bits();
 	char charToAdd;
 
@@ -162,16 +161,10 @@ string Huffman::encode(fstream & input)
 	Bits endBITS = encodingTable[EOF];
 	BITS.mergeBits(endBITS);
 
-	// Convert binary bits into chars to be transferred back into string
+	// Convert binary bits into chars to be transferred back into output
 	while (BITS.good()){
-		code.push_back(BITS.getChar());
+		output.put(BITS.getChar());
 	}
-
-	// Reset pointer in filestream
-	input.clear();
-	input.seekg(0);
-
-	return code;
 }
 
 void Huffman::buildDecodingTree(NodePointer np, Bits & BITS) {
@@ -187,22 +180,18 @@ void Huffman::buildDecodingTree(NodePointer np, Bits & BITS) {
 	}
 }
 
-string Huffman::decode(fstream & input)
+void Huffman::decode(fstream & input, fstream & output)
 {
-	string resultToWrite;
 	Bits BITS = Bits();
 
-	int count = 0;
-
 	// PROBLEM IS HERE
-	char c;
-	while (input.get(c))
+	while (input.good())
 	{
-		BITS.addChar(c);
+		char c = input.get();
+		if (input.good()) {
+			BITS.addChar(c);
+		}
 	}
-	
-	cout << "count result: ";
-	cout << count << " " << BITS.size / 8 << "\n";
 
 	buildDecodingTree(rootNode, BITS);
 	displayTree();
@@ -214,7 +203,7 @@ string Huffman::decode(fstream & input)
 			if (c == EOF){
 				break;
 			};
-			resultToWrite.push_back(c);
+			output.put(c);
 			pointer = rootNode;
 		}
 		else {
@@ -225,14 +214,6 @@ string Huffman::decode(fstream & input)
 				pointer = pointer->left;
 			}
 		}
-
-		//cout << resultToWrite << "\n";
 	}
-
-	// Reset pointer in filestream
-	input.clear();
-	input.seekg(0);
-
-	return resultToWrite;
 }
 

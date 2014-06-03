@@ -8,7 +8,9 @@
 using namespace std;
 #include "Huffman.h"
 
-#define LOOP_TIMES 1; 
+#define LOOP_TIMES 1
+#define SHOW_HUFFMAN_TREE true
+#define SHOW_ENCODING_TABLE false
 
 void createFile(string name){
 	ofstream newFile(name, ios::out);
@@ -100,9 +102,9 @@ int main()
 				cout << "Starting Huff Operation: \n\n";
 				Huffman h;
 				h.buildHuffman(infile);
-				//h.displayTree();
-				//h.displayTable();
-				resultToWrite = h.encode(infile);
+				if (SHOW_HUFFMAN_TREE) h.displayTree();
+				if (SHOW_ENCODING_TABLE) h.displayTable();
+				h.encode(infile, outfile);
 			}
 
 			// LZ1
@@ -127,7 +129,7 @@ int main()
 				if (compressionType == 13){
 					cout << "Performing Inverse Huffman: \n";
 					Huffman h;
-					resultToWrite = h.decode(infile);
+					h.decode(infile, outfile);
 				}
 				// Inverse LPZ1
 				else if (compressionType == 17){
@@ -148,7 +150,6 @@ int main()
 
 			// Write the resulting string into outfile
 			// We include this within the loop
-			outfile << resultToWrite;
 			infile.close();
 			outfile.close();
 

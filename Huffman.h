@@ -1,4 +1,3 @@
-#include <string>
 #include <iostream>
 #include <fstream>
 #include <tr1/unordered_map>
@@ -197,13 +196,13 @@ public:
 	Bits encodeTree(NodePointer np, Bits BITS);
 
 	// Encode the incoming message using current HUffmantree
-	string encode(fstream & input);
+	void encode(fstream & input, fstream & output);
 
 	void buildDecodingTree(NodePointer np, Bits & BITS);
 
 	// Decode incoming message
 	// will rebuild Huffman tree and analyze incoming data
-	string decode(fstream & input);
+	void decode(fstream & input, fstream & output);
 
 private:
 	NodePointer rootNode;
