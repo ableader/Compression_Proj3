@@ -3,57 +3,59 @@
 #include <fstream>
 #include <tr1/unordered_map>
 #include <cstdlib>
+#include <string>
 #include <cmath>
-#ifndef HUFFMAN
-#define HUFFMAN
+#ifndef LEMPZEV
+#define LEMPZEV
+using namespace std;
 
-class Huffman
+class Lempzev
 {
-private:
-	// Node class
-	// Every node has a priority, data, left node and right node
-	class Node
-	{
+	class Token {
+		bool isTokenDouble;
+		bool isDouble() {
+			return isTokenDouble;
+		}
+	};
+
+	class TokenDouble : public Token {
 	public:
-		int frequency;
-		char data;
-		Node *left,
-			 *right;
+		int len, offset;
 
-		// Node constructor
-		// requires a char and a number
-		Node(char item, int number)
+		// TokenDouble constructor
+		TokenDouble(int l, int o)
 		{
-			frequency = number;
-			data = item;
-			left = NULL;
-			right = NULL;
-		}
-
-		Node(char item)
-		{
-			frequency = 0;
-			data = item;
-			left = NULL;
-			right = NULL;
+			isTokenDouble = true;
+			len = l;
+			offset = o;
 		}
 	};
 
-	// For simplicity sake we add a NodePointer
-	typedef Node * NodePointer;
+	class TokenTriple : public Token {
+	public:
+		int code, strLen;
+		String chars;
 
-	// Used to compare within priority queue
-	struct MyComparator {
-		bool operator() (Node* one, Node* two) {
-			return one->frequency > two->frequency;
+		// TokenDouble constructor
+		TokenTriple(int c, int l, String str)
+		{
+			isTokenDouble = false;
+			code = l;
+			strLen = l;
+			chars = str;
+		}
+
+		void mergeToken(TokenTriple t) {
+			strLen = strLen + t.strLen;
+			chars += t.chars;
 		}
 	};
 
-	// Bits is used to manipulate bits within Huffman Encoding
+	// Bits is used to manipulate bits within Lempzev Encoding
 	class Bits
 	{
 	public:
-		std::vector<bool> BITS;
+		vector<bool> BITS;
 		int pointer;
 		int size;
 
@@ -174,46 +176,23 @@ private:
 	};
 
 public:
-	// Construct new Huffman
-	Huffman();
+	// Construct new Lempzev
+	Lempzev();
 
-	// Build the huffman tree given an input
-	// Also builds the encoding table corresponding with tree
-	void buildHuffman(fstream & input);
-
-	// Recursive function that takes huffman tree and creates an encoding table
-	void buildEncodingTable(NodePointer np, Bits BITS);
-
-	// Recursive function used in display tree
-	void printTree(NodePointer root, int offset);
-
-	// Displays the Huffman tree
-	void displayTree();
-
-	// Displays the encoding table
-	void displayTable();
-
-	// Encode Huffman tree
-	Bits encodeTree(NodePointer np, Bits BITS);
-
-	// Encode the incoming message using current HUffmantree
+	// Encode the incoming message using Lempzev
 	string encode(fstream & input);
 
-	void buildDecodingTree(NodePointer np, Bits & BITS);
-
 	// Decode incoming message
-	// will rebuild Huffman tree and analyze incoming data
+	// will rebuild Lempzev tree and analyze incoming data
 	string decode(fstream & input);
 
 private:
-	NodePointer rootNode;
 	std::tr1::unordered_map<char, Bits> encodingTable;
 };
 
-// Constructor for Huffman
-inline Huffman::Huffman()
+// Constructor for Lempzev
+inline Lempzev::Lempzev()
 {
-	rootNode = new Node('-', 0);
 	encodingTable = std::tr1::unordered_map<char, Bits>();
 }
 #endif

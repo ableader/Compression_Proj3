@@ -4,11 +4,11 @@
 #include <sstream>
 #include <fstream>
 #include <time.h>
-#include <stdlib.h>
+#include <bitset>
 using namespace std;
 #include "Huffman.h"
 
-#define LOOP_TIMES 5; 
+#define LOOP_TIMES 1; 
 
 void createFile(string name){
 	ofstream newFile(name, ios::out);
@@ -66,7 +66,7 @@ int main()
 				// We close the filestream
 				infile.close();
 				// Allow user to input the content
-				cout << "'" << filename1 << "' file is not found.  Please enter input stream:\n";
+				cout << "'" << filename1 << "' file is not found.\n\nPlease enter input stream:\n";
 				getline(cin, input);
 				// Create a new file called inputStream
 				filename1 = "inputStream";
@@ -75,10 +75,12 @@ int main()
 				// and input the content into the file
 				infile = fstream(filename1);
 				infile << input;
+				infile.close();
+				infile = fstream(filename1);
 			}
 
 			// Create a second file to take in the output of whatever operation we perform
-			filename2 = filename1 + ".result";
+			filename2 = filename1 + "-c";
 			createFile(filename2);
 			// Open new filestream for output file
 			fstream outfile(filename2);
@@ -95,26 +97,49 @@ int main()
 			// HUFF
 			cout << "\n";
 			if (command == "HUFF"){
-				cout << "Starting Huff Operation: \n";
-
+				cout << "Starting Huff Operation: \n\n";
+				Huffman h;
+				h.buildHuffman(infile);
+				//h.displayTree();
+				//h.displayTable();
+				resultToWrite = h.encode(infile);
 			}
 
 			// LZ1
 			else if (command == "LZ1"){
 				cout << "Starting LZ1 Operation: \n";
+				Lempzev lempzev;
 
+				resultToWrite = lempzev.encode(infile);
 			}
 
 			// LZ2
 			else if (command == "LZ2"){
 				cout << "Starting LZ2 Operation: \n";
-
 			}
 
 			// EXPAND
 			else if (command == "EXPAND"){
 				cout << "Starting EXPAND Operation: \n";
+				char compressionType = infile.get();
 
+				// Inverse Huffman
+				if (compressionType == 13){
+					cout << "Performing Inverse Huffman: \n";
+					Huffman h;
+					resultToWrite = h.decode(infile);
+				}
+				// Inverse LPZ1
+				else if (compressionType == 17){
+					cout << "Performing Inverse LPZ1: \n";
+				}
+				// Inverse LPZ2
+				else if (compressionType == 19){
+					cout << "Performing Inverse LPZ2: \n";
+				}
+				else{
+					cout << "File does not match available decompression types.\n";
+				}
 			}
 			//}
 
@@ -124,23 +149,30 @@ int main()
 			// Write the resulting string into outfile
 			// We include this within the loop
 			outfile << resultToWrite;
+			infile.close();
+			outfile.close();
 
 			// Analysis of result of program
-			float time_elapsed = (double)(end - begin) / CLOCKS_PER_SEC / LOOP_TIMES;
+			float time_elapsed = (double)((end - begin) / CLOCKS_PER_SEC) / LOOP_TIMES;
 			float infileSize;
 			float outfileSize;
 			float percentChange;
 
 			// Obtain size of infile
-			infile.seekg(0, ifstream::end);
+			infile = fstream(filename1);
+			infile.seekg(0, fstream::end);
 			infileSize = infile.tellg();
+			infile.close();
 
 			// Obtain size of outfile
-			outfile.seekg(0, ifstream::end);
+			outfile = fstream(filename2);
+			outfile.seekg(0, fstream::end);
 			outfileSize = outfile.tellg();
+			outfile.close();
 
 			// Calculate change from original file to new file
-			percentChange = (outfileSize / infileSize) * 100;
+			percentChange = (1 - outfileSize / infileSize) * 100;
+			percentChange = ((int)(percentChange * 100 + .5) / 100.0);
 
 			// Close for safety reasons
 			infile.close();
@@ -148,13 +180,13 @@ int main()
 			
 			// Output Analysis
 			cout << "\n---------------\n";
-			cout << "'" << filename1 << "' size: " << infileSize << '\n';
-			cout << "'" << filename2 << "' size: " << outfileSize << '\n';
-			cout << "Percentage compression saving: " << percentChange << "%\n";
-			cout << "Time needed to perform operation: " << time_elapsed << "\n";
+			cout << "'" << filename1 << "' size: " << infileSize << " bytes\n";
+			cout << "'" << filename2 << "' size: " << outfileSize << " bytes\n";
+			cout << "Compression size saving: " << percentChange << "%\n";
+			cout << "Average time: " << time_elapsed << " seconds\n";
 		}
 
-		// COMAPRE:
+		// COMPARE:
 		// compares two files to ensure they are exactly the same.
 		// Primarily used for debugging purposes
 		else if (command == "COMPARE") {
