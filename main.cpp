@@ -11,7 +11,7 @@ using namespace std;
 #include "Huffman.h"
 #include "Lempzev.h"
 
-#define SHOW_OUTPUT_STREAM true
+#define SHOW_OUTPUT_STREAM false
 #define SHOW_HUFFMAN_TREE false
 #define SHOW_ENCODING_TABLE false
 
@@ -118,12 +118,15 @@ int main()
 			// LZ1
 			else if (command == "LZ1"){
 				cout << "Starting LZ1 Operation: \n";
-
+				Lempzev l;
+				l.encode(charString, outfile, 1);
 			}
 
 			// LZ2
 			else if (command == "LZ2"){
 				cout << "Starting LZ2 Operation: \n";
+				Lempzev l;
+				l.encode(charString, outfile, 2);
 			}
 
 			// EXPAND
@@ -141,10 +144,14 @@ int main()
 				// Inverse LPZ1
 				else if (compressionType == 17){
 					cout << "Performing Inverse LPZ1: \n";
+					Lempzev l;
+					l.decode(charString, outfile, 1);
 				}
 				// Inverse LPZ2
 				else if (compressionType == 19){
 					cout << "Performing Inverse LPZ2: \n";
+					Lempzev l;
+					l.decode(charString, outfile, 2);
 				}
 				else{
 					cout << "File does not match available decompression types.\n";
@@ -158,7 +165,6 @@ int main()
 			// We include this within the loop
 			infile.close();
 			outfile.close();
-
 
 			// If user wants to see output stream, we open outfile and display result
 			if (SHOW_OUTPUT_STREAM) {

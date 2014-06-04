@@ -13,43 +13,40 @@ class Lempzev
 {
 	class Token {
 	public:
-		bool isTokenDouble;
-		bool isDouble() {
-			return isTokenDouble;
-		}
-		void mergeToken(Token t){};
-	};
+		int len, offset, code, strLen;
+		vector<char> chars;
+		bool isDouble;
 
-	class TokenDouble : public Token {
-	public:
-		int len, offset;
+		Token(){};
 
-		// TokenDouble constructor
-		TokenDouble(int l, int o)
+		// Token for double
+		Token(int l, int o)
 		{
-			isTokenDouble = true;
+			isDouble = true;
 			len = l;
 			offset = o;
-		}
-	};
-
-	class TokenTriple : public Token {
-	public:
-		int code, strLen;
-		string chars;
-
-		// TokenDouble constructor
-		TokenTriple(int c, int l, string str)
-		{
-			isTokenDouble = false;
-			code = l;
-			strLen = l;
-			chars = str;
+			code = -1;
+			strLen = -1;
+			chars = vector<char>();
 		}
 
-		void mergeToken(TokenTriple t) {
+		// Token for triple
+		Token(int c, int sl, char ch){
+			isDouble = false;
+			len = -1;
+			offset = -1;
+			code = c;
+			strLen = sl;
+			chars = vector<char>();
+			chars.push_back(ch);
+		}
+
+		// Only used for Token Triple
+		void mergeToken(Token t) {
 			strLen += t.strLen;
-			chars += t.chars;
+			for (int i = 0; i < t.chars.size(); i++){
+				chars.push_back(t.chars.at(i));
+			}
 		}
 	};
 
@@ -78,6 +75,7 @@ class Lempzev
 		bool good() {
 			return pointer < size;
 		}
+
 
 		// Returns current bit and moves pointer
 		bool getBit() {
@@ -128,6 +126,29 @@ class Lempzev
 			}
 		}
 
+		int getInt(int numOfBits){
+			int sum = 0;
+			for (int i = 0; i < numOfBits; i++){
+				if (getBit()){
+					sum += pow(2.0, numOfBits - i - 1);
+				}
+			}
+			return sum;
+		}
+
+		void addInt(int value, int numOfBits){
+			while (--numOfBits >= 0){
+				int currentPower = pow(2.0, numOfBits);
+				if (value >= currentPower){
+					addBit(1);
+					value -= currentPower;
+				}
+				else {
+					addBit(0);
+				}
+			}
+		}
+
 		// Add a character and turn it into bits
 		void addChar(char c){
 			if (c < 0){
@@ -165,6 +186,8 @@ class Lempzev
 
 		void displayRemainingBits() {
 			for (int i = pointer; i < size; i++){
+				if (i % 8 == 0)
+					cout << " ";
 				cout << BITS[i];
 			}
 		}
@@ -172,6 +195,8 @@ class Lempzev
 		// Display all current bits in BITS
 		void displayBits() {
 			for (int i = 0; i < size; i++){
+				if (i % 8 == 0)
+					cout << " ";
 				cout << BITS[i];
 			}
 		}
@@ -182,11 +207,11 @@ public:
 	Lempzev();
 
 	// Encode the incoming message using Lempzev
-	void encode(fstream & input, fstream & output, int variation);
+	void encode(vector<char> & input, fstream & output, int variation);
 
 	// Decode incoming message
 	// will rebuild Lempzev tree and analyze incoming data
-	void decode(fstream & input, fstream & output, int variation);
+	void decode(vector<char> & input, fstream & output, int variation);
 
 private:
 	unordered_map<char, Bits> encodingTable;

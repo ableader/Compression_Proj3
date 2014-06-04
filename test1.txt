@@ -1,0 +1,100 @@
+CompSci 165 Project #3
+FILE COMPRESSION
+
+due June 4 (W week 10)
+
+Requirements
+
+In this project, you will investigate the relative effectiveness and efficiencies of two basic file compression techniques, (1) static Huffman coding and (2) variations of Lempel-Ziv sliding window.
+The user should be able to invoke the following routines. Each routine has one optional command line parameter, which specifies the input filename. 
+NOTE: If no filename is specified then the standard input stream is used. The output is always directed to the standard output stream.
+
+function	    input    	output
+HUFF	file	compressed file using static Huffman
+LZ1	file	compressed file using Lempel-Ziv sliding window variation 1
+LZ2	file	compressed file using Lempel-Ziv sliding window variation 2
+EXPAND	file	uncompressed file, using appropriate algorithm (Huffman or Lempel-Ziv)
+Examples:
+
+command line	effect
+HUFF paper3	applies Huffman to file paper3
+LZ2	applies Lempel-Ziv variation 2 to the standard input stream
+EXPAND xx	uncompresses file xx using inverse Huffman or inverse Lempel-Ziv
+Calculate the compression savings, the processing time for encoding, and the processing time for decoding. Determine these values for your implementations of static Huffman and Lempel-Ziv sliding window, and also for one of the compression utilities (for example, pkzip or gzip) available on the system.
+
+You will use a "standard suite" of files for benchmark purposes. Produce a table (this can be done by hand, not necessarily by a program or script) that contains the following rows:
+row title	     	row contents
+filename		 file name
+size		 original file size
+----		 -- blank row --
+HUFFsiz		 compressed file size using HUFF
+%save		 percentage compression savings for HUFF
+t-cmprss		 time to compress using HUFF
+t-expand		 time to decompress from HUFF
+----		 -- blank row --
+LZ1siz		 compressed file size using LZ variation 1
+%save		 percentage compression savings for LZ variation 1
+t-cmprss		 time to compress using LZ variation 1
+t-expand		 time to decompress from LZ variation 1
+----		 -- blank row --
+LZ2siz		 compressed file size using LZ variation 2
+%save		 percentage compression savings for LZ variation 2
+t-cmprss		 time to compress using LZ variation 2
+t-expand		 time to decompress from LZ variation 2
+----		 -- blank row --
+???siz		 compressed file size using utility program (specify)
+%save		 percentage compression savings for utility program
+t-cmprss		 time to compress using utility program
+t-expand		 time to decompress from utility program
+The data in the table will be arranged in columns. The leftmost column contains the row titles, as shown above. 
+In addition, there will be one column for each file in the benchmark suite of files, with contents as specified above.
+
+The first byte of the output created by your compression algorithms should be a "magic" number that will be checked by your decompression program so that it can select the appropriate decompression algorithm to use. The magic number for HUFF is to be 13, for LZ1 is to be 17, and for LZ2 is to be 19.
+
+The specifications must be strictly adhered to, but there are opportunities for clever implementations that can result in significant improvements in compression effectiveness and compression/decompression speed. Can your program outperform other teams' programs by saving more space and using less time?
+
+Static Huffman coding
+
+To encode
+
+In a first pass, accumulate statistics on character frequencies. There will also be an artificial special character called End-of-Input that is defined as occurring exactly once. Build and output a corresponding Huffman code tree. (As discussed in class, it is possible to express the complete structure of any Huffman code tree using an average of just one bit per node.) In a second pass, iterate converting an input character into an output bit sequence. At the end, remember to output the bit sequence corresponding to the End-of-Input symbol.
+To decode
+
+Read and build the code tree. While iteratively reading input bits, traverse the code tree. Upon encountering a leaf, output the appropriate character and reset the traversing pointer to the codetree's root. The iteration ends when encountering the leaf that corresponds to the End-of-Input symbol.
+Variations of Lempel-Ziv sliding window
+
+Use window size N = 2048 in variation 1, and use N = 4096 in variation 2. Use maximum string length F = 16. The window, W, consists of N-F input characters that have already been processed and encoded and the next F input characters that are yet to be processed (a lookahead buffer).
+To encode
+
+Initialize the window to consist of N-F blanks and the first F characters of the input. Iterate doing the following steps. Search the window to find the longest match with a prefix of the lookahead buffer. (Part, but not all, of this match may overlap the lookahead buffer.)
+After finding a longest match of length 2 or more, output an encoding of the token double <len,offset> to indicate that the match has length len and starts offset characters before the beginning of the lookahead buffer. Shift the window forward len characters.
+
+len can be represented in 4 bits, where the encoding for value j will be the 4-bit binary string for j -1. Thus, "2" is represented by 0001, "3" by 0010 ... "16" by 1111.
+
+Since the offset is less than N, it can be represented in log2N bits. Thus, the offset can be represented in 11 or 12 bits corresponding to N taking on values of 2048 or 4096.
+
+However, when there is no match of the first character in the lookahead buffer, or when there is a match of only the first character in the lookahead buffer but not the second character, it is most efficient to provide the value of the next character instead of an offset to its location. In this case, output an encoding of the resulting token triple <code,strlen,chars>, where code is a 4-bit binary number with value 0, indicating that there is no reference to the window, strlen is a 4-bit binary representation of the number of characters being represented literally (often, but not always, having value 1), and chars is a sequence of strlen characters represented literally. Then shift the window forward strlen characters.
+
+If two literals are presented contiguously, a careful efficient implementation will output one token triple <0,2,char1 char2> instead of two token triples <0,1,char1> <0,1,char2>. Similarly, up to fifteen literals in a row can be represented with one token triple.
+
+The special case of token double <0,0>, where strlen has value 0, indicates that no character is being represented literally. This special code, using a total of 8 bits, represents EOF.
+
+Note that token doubles in variation 1 will not be an integer multiple of 8 bits in length. However, in variation 2, token doubles and token triples are always an integer multiple of 8 bits in length. This fact can be used to obtain an I/O speed-up for variation 2, as one layer of I/O buffering can be eliminated.
+
+To decode
+
+Read the first byte that contains the magic number, and thus defines the value of N. Initialize the window to consist of all blanks. Iterate doing the following steps until the special code for EOF is encountered.
+read 4 bits to get the representation of len (or code=0000)
+len has value one more than the binary value of those 4 bits
+if len has value 2 or more then
+read log2N bits to obtain value of offset
+output the len characters, one at a time, allowing for overlap with the buffer
+shift the window forward len characters
+otherwise we obtained four 0-bits indicating a literal string
+read 4 bits to get the value of strlen
+if strlen is zero then exit
+read and output strlen 8-bit characters
+shift the window forward strlen characters
+Note that, essentially, Lempel-Ziv maintains a dynamic dictionary. The straightforward implementation has very rapid insertion and deletion, but extremely slow search. An efficient implementation uses clever data structures that enable all of insertion, deletion, and search to be executed moderately quickly. The straightforward implementation uses an unsorted list. A more efficient implementation uses a trie (digital search tree). A much more efficient implementation uses a hash table. To get full credit, your implementation must be time-efficient.
+
+Last modified: Mar 11, 2014
