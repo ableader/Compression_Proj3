@@ -34,10 +34,10 @@ class Lempzev
 	class TokenTriple : public Token {
 	public:
 		int code, strLen;
-		String chars;
+		string chars;
 
 		// TokenDouble constructor
-		TokenTriple(int c, int l, String str)
+		TokenTriple(int c, int l, string str)
 		{
 			isTokenDouble = false;
 			code = l;
