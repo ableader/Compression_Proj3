@@ -158,7 +158,15 @@ void Huffman::encode(vector<char> & input, fstream & output)
 	// Encode Huffman Tree
 	BITS.mergeBits(encodeTree(rootNode, Bits()));
 
-	// Encode message
+	// To speed up our code, we will process input 8 bits at a time
+	// input.size % 8 gives number of extra loops we must do to
+	//   make the rest of the message a multiple of 8 bits
+	// So, we encode the first 'extra' bits
+	// Then encode rest of message 8 bits at a time
+	//int remainder = input.size() % 8;
+	//BITS.mergeBits(BITS.getBits(remainder));
+
+
 	for (int i = 0; i < input.size(); i++){
 		BITS.mergeBits(encodingTable[input.at(i)]);
 	}

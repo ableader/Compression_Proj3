@@ -2,7 +2,9 @@
 #include <iostream>
 #include <iterator>
 #include <vector>
+#include <algorithm>
 #include <string>
+#include <cstdlib>
 #include <sstream>
 #include <fstream>
 #include <time.h>
@@ -58,14 +60,15 @@ int main()
 
 		// EXIT:
 		// allows user to leave program
-		if (command == "EXIT") {
+		std::transform(command.begin(), command.end(), command.begin(), ::tolower);
+		if (command == "exit") {
 			cout << "Exiting program\n";
 			running = false;
 		}
 
 		// These set of commands are used for compression and decoding
 		// They have their own "else if" block for character reading purposes
-		else if (command == "HUFF" || command == "LZ1" || command == "LZ2" || command == "EXPAND") {
+		else if (command == "huff" || command == "lz1" || command == "lz2" || command == "expand") {
 			// We open our input file into our filestream
 			fstream infile;
 			fstream outfile;
@@ -98,6 +101,7 @@ int main()
 			// Prepare vector of chars to work with
 			ifstream::pos_type pos = infile.tellg();
 			vector<char>  charString(pos);
+			// TODO: what should first arg be?
 
 			infile.seekg(0, ios::beg);
 			infile.read(&charString[0], pos);
@@ -108,7 +112,7 @@ int main()
 
 			// HUFF
 			cout << "\n";
-			if (command == "HUFF"){
+			if (command == "huff"){
 				cout << "Starting Huff Operation: \n\n";
 				
 				Huffman h;
@@ -119,21 +123,21 @@ int main()
 			}
 
 			// LZ1
-			else if (command == "LZ1"){
+			else if (command == "lz1"){
 				cout << "Starting LZ1 Operation: \n";
 				Lempzev l;
 				l.encode(charString, outfile, 1);
 			}
 
 			// LZ2
-			else if (command == "LZ2"){
+			else if (command == "lz2"){
 				cout << "Starting LZ2 Operation: \n";
 				Lempzev l;
 				l.encode(charString, outfile, 2);
 			}
 
 			// EXPAND
-			else if (command == "EXPAND"){
+			else if (command == "expand"){
 				cout << "Starting EXPAND Operation: \n";
 				char compressionType = charString.at(0);
 
@@ -176,12 +180,13 @@ int main()
 				// Prepare vector of chars to work with
 				ifstream::pos_type pos = outfile.tellg();
 				vector<char>  charString(pos);
+				// TODO: what should first arg be?
 
 				outfile.seekg(0, ios::beg);
 				outfile.read(&charString[0], pos);
 
 				cout << "Output Stream:\n";
-				for (int i = 0; i < charString.size(); i++){
+				for (unsigned int i = 0; i < charString.size(); i++){
 					cout << charString.at(i);
 				}
 				cout << "\n\n";
@@ -221,7 +226,7 @@ int main()
 		// COMPARE:
 		// compares two files to ensure they are exactly the same.
 		// Primarily used for debugging purposes
-		else if (command == "COMPARE") {
+		else if (command == "compare") {
 			ifstream stream1(filename1);
 			ifstream stream2(filename2);
 			bool equal = true;

@@ -1,5 +1,5 @@
 Charles Hsueh
-Andrew Leader
+Andrew Leader 45136371
 
 6/4/2014
 CS 165
@@ -62,18 +62,18 @@ size		387168 bytes
 
 HUFFsiz		254930 bytes
 %save		34.16 %
-t-cmprss	56 seconds
-t-expand	49 seconds
+t-cmprss	.56 seconds
+t-expand	.49 seconds
 
 LZ1siz		219355 bytes
 %save		43.34 %
-t-cmprss	126 seconds
-t-expand	69 seconds
+t-cmprss	18 seconds
+t-expand	5 seconds
 
 LZ2siz		202494 bytes
 %save		47.7 %
-t-cmprss	167 seconds
-t-expand	84 seconds
+t-cmprss	31 seconds
+t-expand	10 seconds
 
 WinRARsiz	126011 bytes
 %save		67.45 %
@@ -88,8 +88,34 @@ size		768771 bytes
 
 HUFFsiz		438481 bytes
 %save		42.96 %
-t-cmprss	97 seconds
-t-expand	86 seconds
+t-cmprss	.97 seconds
+t-expand	.86 seconds
+
+LZ1siz		252438 bytes
+%save		67.16 %
+t-cmprss	21 seconds
+t-expand	7 seconds
+
+LZ2siz		233534 bytes
+%save		69.62%
+t-cmprss	37 seconds
+t-expand	12 seconds
+
+WinRARsiz	277131 bytes
+%save		63.95%
+t-cmprss	.20 seconds
+t-expand	.13 seconds
+
+------------------
+kennedy.xls
+------------------
+
+size		1.02974E6 bytes
+
+HUFFsiz		643105 bytes
+%save		37.55 %
+t-cmprss	2 seconds
+t-expand	1 seconds
 
 LZ1siz		252438 bytes
 %save		67.16 %
@@ -101,8 +127,8 @@ LZ2siz		233534 bytes
 t-cmprss	189 seconds
 t-expand	98 seconds
 
-WinRARsiz	277131 bytes
-%save		63.95%
+WinRARsiz	39627 bytes
+%save		74.01%
 t-cmprss	.20 seconds
 t-expand	.13 seconds
 
@@ -129,3 +155,10 @@ LZ1/LZ2 analysis:
 
 	BIT Stream is in general costly for everything.  Adding in chars/ints,
 	merging two BIT structures is expensive.
+
+
+
+
+
+
+

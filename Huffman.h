@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
+#include <cmath>
 #include <unordered_map>
 #ifndef HUFFMAN
 #define HUFFMAN
@@ -86,6 +88,22 @@ private:
 			}
 		}
 
+		vector<bool> getBits(int n) {
+			if ((n>1) && (pointer+n < size)){
+				vector<bool> bits;
+				for (int i = pointer; i < pointer+n; i++) {
+					bits.push_back(BITS[i]);
+				}
+				pointer++;
+				return bits;
+			}
+			else{
+				cout << "ERROR: getBits(n) goes out of bounds\n       or n <= 1\n";
+				system("PAUSE");
+				exit(1);
+			}
+		}
+
 		// Return next char if there are any bits available
 		// If there are not enough bits, we fill in the remaining bits with 0
 		char getChar(){
@@ -109,7 +127,7 @@ private:
 				for (int i = 1; i < 8; i++)
 				{
 					if (bits[i])
-						c += pow(2, 7-i);
+						c += pow(2.0, 7-i);
 				}
 
 				return c;
@@ -132,7 +150,7 @@ private:
 			}
 
 			for (int i = 6; i >= 0; i--){
-				int currentPower = pow(2, i);
+				int currentPower = pow(2.0, i);
 				if (c >= currentPower){
 					addBit(1);
 					c = c - currentPower;

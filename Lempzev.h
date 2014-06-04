@@ -45,7 +45,7 @@ class Lempzev
 		// Only used for Token Triple
 		void mergeToken(Token t) {
 			strLen += t.strLen;
-			for (int i = 0; i < t.chars.size(); i++){
+			for (unsigned int i = 0; i < t.chars.size(); i++){
 				chars.push_back(t.chars.at(i));
 			}
 		}
