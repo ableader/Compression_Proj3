@@ -11,8 +11,11 @@ using namespace std;
 #include "Huffman.h"
 #include "Lempzev.h"
 
+// Shows resulting output stream in chars
 #define SHOW_OUTPUT_STREAM false
+// Shows Huffman Tree for both encoding and decoding
 #define SHOW_HUFFMAN_TREE false
+// Shows Encoding table for Huffman when encoding
 #define SHOW_ENCODING_TABLE false
 
 void createFile(string name){

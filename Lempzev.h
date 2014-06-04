@@ -11,6 +11,7 @@ using namespace std;
 
 class Lempzev
 {
+	// Token to be used in lempzev
 	class Token {
 	public:
 		int len, offset, code, strLen;
@@ -126,6 +127,7 @@ class Lempzev
 			}
 		}
 
+		// Returns int based on number of bits requested
 		int getInt(int numOfBits){
 			int sum = 0;
 			for (int i = 0; i < numOfBits; i++){
@@ -136,6 +138,7 @@ class Lempzev
 			return sum;
 		}
 
+		// Adds a int and turns it into bits based on total number of bits
 		void addInt(int value, int numOfBits){
 			while (--numOfBits >= 0){
 				int currentPower = pow(2.0, numOfBits);
@@ -184,6 +187,7 @@ class Lempzev
 			}
 		}
 
+		// Display all remaining bits in BITS after pointer
 		void displayRemainingBits() {
 			for (int i = pointer; i < size; i++){
 				if (i % 8 == 0)
@@ -212,14 +216,10 @@ public:
 	// Decode incoming message
 	// will rebuild Lempzev tree and analyze incoming data
 	void decode(vector<char> & input, fstream & output, int variation);
-
-private:
-	std::tr1::unordered_map<char, Bits> encodingTable;
 };
 
 // Constructor for Lempzev
 inline Lempzev::Lempzev()
 {
-	encodingTable = std::tr1::unordered_map<char, Bits>();
 }
 #endif

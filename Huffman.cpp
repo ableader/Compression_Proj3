@@ -7,13 +7,16 @@
 #include <unordered_map>
 using namespace std;
 #include "Huffman.h"
+
+// When researched, many people agreed char 3 is EOF file token.
+// Very appropriate for our usage
 #define EOF 3
+// Used primarily for debugging
+// Shows us frequency that characters appear
 #define DISPLAY_FREQUENCY_TABLE false
 
 void Huffman::buildHuffman(vector<char> & input)
 {
-	
-
 	// Obtain frequencies of all chars from filestream
 	unordered_map<char, int> frequencyTable = unordered_map<char, int>();
 	for (int i = 0; i < input.size(); i++){
@@ -24,6 +27,7 @@ void Huffman::buildHuffman(vector<char> & input)
 	if (frequencyTable.count(EOF)) cout << "found EOF\n";
 	frequencyTable[EOF] = 1;
 
+	// Displays Frequency Table
 	if (DISPLAY_FREQUENCY_TABLE){
 		int sum = 0;
 		for (auto it = frequencyTable.begin(); it != frequencyTable.end(); ++it){
@@ -41,6 +45,7 @@ void Huffman::buildHuffman(vector<char> & input)
 
 	// Populate binary tree
 	while (pq.size() > 1){
+		// Get two lowest frequency nodes
 		NodePointer nodeOne = pq.top();
 		int nodeOneFrequency = nodeOne->frequency;
 
@@ -49,10 +54,10 @@ void Huffman::buildHuffman(vector<char> & input)
 		int nodeTwoFrequency = nodeTwo->frequency;
 
 		pq.pop();
-		// Create internal node
+		// Create internal node of two lowest nodes
 		NodePointer newNode = new Node('-', nodeOneFrequency + nodeTwoFrequency);
 
-		//cout << newNode->frequency << "\n";
+		// Make two lowest frequency nodes children of internal node
 		newNode->left = nodeOne;
 		newNode->right = nodeTwo;
 
@@ -68,22 +73,28 @@ void Huffman::buildHuffman(vector<char> & input)
 	buildEncodingTable(rootNode, Bits());
 }
 
+// Builds the encoding table using the tree
 void Huffman::buildEncodingTable(Huffman::NodePointer np, Bits BITS) {
+	// We can just check for one side because a binary tree will
+	// always have a leaf or a child on either side
 	if (np->left != NULL){
 		Bits leftBITS = BITS;
 		Bits rightBITS = BITS;
 
+		// BIT string to save
 		leftBITS.addBit(0);
 		rightBITS.addBit(1);
 
 		buildEncodingTable(np->left, leftBITS);
 		buildEncodingTable(np->right, rightBITS);
 	}
+	// Reaching the char, we save the BITS it took to get there
 	else {
 		encodingTable[np->data] = BITS;
 	}
 };
 
+// Recursive function to print Huffman tree
 void Huffman::printTree(Huffman::NodePointer np, int offset)
 {
 	if (np){
@@ -93,6 +104,7 @@ void Huffman::printTree(Huffman::NodePointer np, int offset)
 	}
 }
 
+// Use this function to properly display the tree
 void Huffman::displayTree()
 {
 	cout << "Huffman Binary Tree\n";
@@ -101,6 +113,7 @@ void Huffman::displayTree()
 	cout << "\n";
 }
 
+// Use this function to properly display the encoding table
 void Huffman::displayTable() {
 	cout << "Huffman Encoding Table\n";
 	cout << "-------------------\n\n";
@@ -112,16 +125,20 @@ void Huffman::displayTable() {
 	cout << "\n";
 };
 
+// Encodes the tree into bits
 Huffman::Bits Huffman::encodeTree(NodePointer np, Bits BITS){
 	Bits returnBITS = BITS;
 
 	if (np->left != NULL){
+		// 0 indicates a parent node
 		returnBITS.addBit(0);
 
 		returnBITS = encodeTree(np->left, returnBITS);
 		returnBITS = encodeTree(np->right, returnBITS);
 	}
 	else {
+		// 1 indicates a leaf node and the need to examine
+		// char
 		returnBITS.addBit(1);
 		returnBITS.addChar(np->data);
 	}
@@ -156,11 +173,15 @@ void Huffman::encode(vector<char> & input, fstream & output)
 	}
 }
 
+// build Decoding Tree is takes in BIT stream to create it
+// We can take advantage of the fact that binary trees do not
+// have NULL leaves.  We can rely on this fact.
 void Huffman::buildDecodingTree(NodePointer np, Bits & BITS) {
-	//BITS.displayBits();
+	// If it's a leaf node
 	if (BITS.getBit()) {
 		np->data = BITS.getChar();
 	}
+	// If it's a parent node
 	else {
 		np->left = new Node('-');
 		buildDecodingTree(np->left, BITS);
@@ -178,20 +199,27 @@ void Huffman::decode(vector<char> & input, fstream & output)
 		BITS.addChar(input.at(i));
 	}
 
+	// Builds the decoding tree from bits
 	buildDecodingTree(rootNode, BITS);
-	//displayTree();
 
+	// Take in next bits and traverse the tree
 	NodePointer pointer = rootNode;
 	while (1){
+		// If you hit a leaf
 		if (pointer->left == NULL || pointer->right == NULL){
+			// Get the char
 			char c = pointer->data;
+			// Check if it's EOF
 			if (c == EOF){
-				break;
+				return;
 			};
+			// Print out the char
 			output.put(c);
+			// reset pointer to rootNode
 			pointer = rootNode;
 		}
 		else {
+			// Determines which branch to take based off current bit
 			if (BITS.getBit()){
 				pointer = pointer->right;
 			}
