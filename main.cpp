@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <iostream>
+#include <iterator>
+#include <vector>
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <time.h>
-#include <bitset>
 using namespace std;
+
 #include "Huffman.h"
+#include "Lempzev.h"
 
 #define LOOP_TIMES 1
 #define SHOW_HUFFMAN_TREE true
@@ -61,7 +64,9 @@ int main()
 		// They have their own "else if" block for character reading purposes
 		else if (command == "HUFF" || command == "LZ1" || command == "LZ2" || command == "EXPAND") {
 			// We open our input file into our filestream
-			fstream infile(filename1);
+			fstream infile;
+			fstream outfile;
+			infile.open(filename1, ios::binary|ios::out|ios::in|ios::ate);
 
 			// If the file does not exist
 			if (!infile.is_open()) {
@@ -75,20 +80,24 @@ int main()
 				createFile(filename1);
 				// Open new filestream with new file "inputStream"
 				// and input the content into the file
-				infile = fstream(filename1);
+				infile.open(filename1);
 				infile << input;
 				infile.close();
-				infile = fstream(filename1);
+				infile.open(filename1);
 			}
 
 			// Create a second file to take in the output of whatever operation we perform
 			filename2 = filename1 + "-c";
 			createFile(filename2);
 			// Open new filestream for output file
-			fstream outfile(filename2);
+			outfile.open(filename2, ios::binary | ios::out | ios::in | ios::ate);
 
-			// Prepare string to input into outfile
-			string resultToWrite;
+			// Prepare vector of chars to work with
+			ifstream::pos_type pos = infile.tellg();
+			vector<char>  charString(pos);
+
+			infile.seekg(0, ios::beg);
+			infile.read(&charString[0], pos);
 
 			// Timer for analysis purpose
 			clock_t begin, end;
@@ -100,19 +109,18 @@ int main()
 			cout << "\n";
 			if (command == "HUFF"){
 				cout << "Starting Huff Operation: \n\n";
+				
 				Huffman h;
-				h.buildHuffman(infile);
+				h.buildHuffman(charString);
 				if (SHOW_HUFFMAN_TREE) h.displayTree();
 				if (SHOW_ENCODING_TABLE) h.displayTable();
-				h.encode(infile, outfile);
+				h.encode(charString, outfile);
 			}
 
 			// LZ1
 			else if (command == "LZ1"){
 				cout << "Starting LZ1 Operation: \n";
-				Lempzev lempzev;
 
-				resultToWrite = lempzev.encode(infile);
 			}
 
 			// LZ2
@@ -123,13 +131,14 @@ int main()
 			// EXPAND
 			else if (command == "EXPAND"){
 				cout << "Starting EXPAND Operation: \n";
-				char compressionType = infile.get();
+				char compressionType = charString.at(0);
 
 				// Inverse Huffman
 				if (compressionType == 13){
 					cout << "Performing Inverse Huffman: \n";
 					Huffman h;
-					h.decode(infile, outfile);
+					h.decode(charString, outfile);
+					if (SHOW_HUFFMAN_TREE) h.displayTree();
 				}
 				// Inverse LPZ1
 				else if (compressionType == 17){
@@ -160,13 +169,13 @@ int main()
 			float percentChange;
 
 			// Obtain size of infile
-			infile = fstream(filename1);
+			infile.open(filename1);
 			infile.seekg(0, fstream::end);
 			infileSize = infile.tellg();
 			infile.close();
 
 			// Obtain size of outfile
-			outfile = fstream(filename2);
+			outfile.open(filename2);
 			outfile.seekg(0, fstream::end);
 			outfileSize = outfile.tellg();
 			outfile.close();
@@ -174,10 +183,6 @@ int main()
 			// Calculate change from original file to new file
 			percentChange = (1 - outfileSize / infileSize) * 100;
 			percentChange = ((int)(percentChange * 100 + .5) / 100.0);
-
-			// Close for safety reasons
-			infile.close();
-			outfile.close();
 			
 			// Output Analysis
 			cout << "\n---------------\n";

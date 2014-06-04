@@ -6,7 +6,7 @@
 #include <vector>
 #include <bitset>
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 using namespace std;
 #include "Lempzev.h"
 
@@ -22,10 +22,10 @@ private void slide(fstream & input, int n) {
 	window.push_back(c);
 }
 
-string Lempzev::encode(fstream & input)
+void Lempzev::encode(fstream & input, fstream & output, int variation)
 {
 	window = vector<char>(2048);
-	vector<Token> matchingTokens = new vector<Token>(2048);
+	vector<Token> matchingTokens = vector<Token>(2048);
 	string code;
 	Bits BITS = Bits();
 	char charToAdd;
@@ -70,9 +70,9 @@ string Lempzev::encode(fstream & input)
 		}
 	}
 	if (foundMatch)
-		t = new TokenDouble(longestLength, optimalOffset);
+		t = TokenDouble(longestLength, optimalOffset);
 	else {
-		t = new TokenTriple(0, 1, 0);
+		t = TokenTriple(0, 1, 0);
 	}
 
 	if (t.isDouble()) {
@@ -85,6 +85,9 @@ string Lempzev::encode(fstream & input)
 			matchingTokens.back().mergeToken(t);
 	}
 
+	// Add artificial end of symbol
+	Bits endBITS = encodingTable[EOF];
+	BITS.mergeBits(endBITS);
 
 	// Convert binary bits into chars to be transferred back into string
 	while (BITS.good()){
@@ -94,35 +97,20 @@ string Lempzev::encode(fstream & input)
 	// Reset pointer in filestream
 	input.clear();
 	input.seekg(0);
-
-	// Add artificial end of symbol
-	Bits endBITS = encodingTable[EOF];
-	BITS.mergeBits(endBITS);
-
-	return code;
 }
 
-string Lempzev::decode(fstream & input)
+void Lempzev::decode(fstream & input, fstream & output, int variation)
 {
-	string resultToWrite;
 	Bits BITS = Bits();
 
-	int count = 0;
-
-	// PROBLEM IS HERE
 	char c;
 	while (input.get(c))
 	{
 		BITS.addChar(c);
 	}
 
-	cout << "count result: ";
-	cout << count << " " << BITS.size / 8 << "\n";
-
 	// Reset pointer in filestream
 	input.clear();
 	input.seekg(0);
-
-	return resultToWrite;
 }
 

@@ -37,17 +37,8 @@ How to use the program:
 Huff analysis:
 	HUFF performs Huffman encoding on file1
 
-	Our Huffman encoding works on small .txt files, but not on the
-	benchmark files. I believe our encoding and decoding algorithm
-	implementation is solid, but somehow we are unable to read all the
-	chars in the file. This is shown when I encode "news", but the decoding
-	process reveals a "news" fully decoded, but only to a certain point.
-	This means the encoding and decoding process works, but char gathering
-	is not.  I suspect that fstream stops prematurely when it comes to
-	converting char into BITS.  An issue we have been actively trying to fix.
-
 	The most costly part of encoding is converting every char into its
-	encoded bit.  I decided on use of map to search for char and return
+	encoded bit.  I decided on use of an map to search for char and return
 	the matching amount of bits.  Appending bits is also costly procedure
 	in our algorithm.  I believe if we cut down on the amount of data
 	allocation in our BITS data frame we could significantly boost our

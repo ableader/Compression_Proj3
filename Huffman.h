@@ -1,8 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <tr1/unordered_map>
-#include <cstdlib>
-#include <cmath>
+#include <unordered_map>
 #ifndef HUFFMAN
 #define HUFFMAN
 
@@ -52,7 +50,7 @@ private:
 	class Bits
 	{
 	public:
-		std::vector<bool> BITS;
+		vector<bool> BITS;
 		int pointer;
 		int size;
 
@@ -111,7 +109,7 @@ private:
 				for (int i = 1; i < 8; i++)
 				{
 					if (bits[i])
-						c += pow(2.0, 7-i);
+						c += pow(2, 7-i);
 				}
 
 				return c;
@@ -134,7 +132,7 @@ private:
 			}
 
 			for (int i = 6; i >= 0; i--){
-				int currentPower = pow(2.0, i);
+				int currentPower = pow(2, i);
 				if (c >= currentPower){
 					addBit(1);
 					c = c - currentPower;
@@ -167,6 +165,8 @@ private:
 		// Display all current bits in BITS
 		void displayBits() {
 			for (int i = 0; i < size; i++){
+				if (i % 8 == 0)
+					cout << " ";
 				cout << BITS[i];
 			}
 		}
@@ -178,7 +178,7 @@ public:
 
 	// Build the huffman tree given an input
 	// Also builds the encoding table corresponding with tree
-	void buildHuffman(fstream & input);
+	void buildHuffman(vector<char> & input);
 
 	// Recursive function that takes huffman tree and creates an encoding table
 	void buildEncodingTable(NodePointer np, Bits BITS);
@@ -196,23 +196,23 @@ public:
 	Bits encodeTree(NodePointer np, Bits BITS);
 
 	// Encode the incoming message using current HUffmantree
-	void encode(fstream & input, fstream & output);
+	void encode(vector<char> & input, fstream & output);
 
 	void buildDecodingTree(NodePointer np, Bits & BITS);
 
 	// Decode incoming message
 	// will rebuild Huffman tree and analyze incoming data
-	void decode(fstream & input, fstream & output);
+	void decode(vector<char> & input, fstream & output);
 
 private:
 	NodePointer rootNode;
-	std::tr1::unordered_map<char, Bits> encodingTable;
+	unordered_map<char, Bits> encodingTable;
 };
 
 // Constructor for Huffman
 inline Huffman::Huffman()
 {
 	rootNode = new Node('-', 0);
-	encodingTable = std::tr1::unordered_map<char, Bits>();
+	encodingTable = unordered_map<char, Bits>();
 }
 #endif
