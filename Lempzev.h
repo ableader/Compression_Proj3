@@ -1,7 +1,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <cstdlib>
 #include <string>
 #include <cmath>
@@ -12,10 +12,12 @@ using namespace std;
 class Lempzev
 {
 	class Token {
+	public:
 		bool isTokenDouble;
 		bool isDouble() {
 			return isTokenDouble;
 		}
+		void mergeToken(Token t){};
 	};
 
 	class TokenDouble : public Token {
@@ -46,7 +48,7 @@ class Lempzev
 		}
 
 		void mergeToken(TokenTriple t) {
-			strLen = strLen + t.strLen;
+			strLen += t.strLen;
 			chars += t.chars;
 		}
 	};
@@ -180,11 +182,11 @@ public:
 	Lempzev();
 
 	// Encode the incoming message using Lempzev
-	string encode(fstream & input);
+	void encode(fstream & input, fstream & output, int variation);
 
 	// Decode incoming message
 	// will rebuild Lempzev tree and analyze incoming data
-	string decode(fstream & input);
+	void decode(fstream & input, fstream & output, int variation);
 
 private:
 	std::tr1::unordered_map<char, Bits> encodingTable;

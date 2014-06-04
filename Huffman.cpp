@@ -4,25 +4,24 @@
 #include <queue>
 #include <vector>
 #include <bitset>
-#include <tr1/unordered_map>
+#include <unordered_map>
 using namespace std;
 #include "Huffman.h"
 #define EOF 3
 #define DISPLAY_FREQUENCY_TABLE false
 
-void Huffman::buildHuffman(fstream & input)
+void Huffman::buildHuffman(vector<char> & input)
 {
+	
+
 	// Obtain frequencies of all chars from filestream
-	std::tr1::unordered_map<char, int> frequencyTable = std::tr1::unordered_map<char, int>();
-	while (input.good())
-	{
-		char c = input.get();
-		if (input.good()) {
-			frequencyTable[c]++;
-		}
+	unordered_map<char, int> frequencyTable = unordered_map<char, int>();
+	for (int i = 0; i < input.size(); i++){
+		frequencyTable[input.at(i)]++;
 	}
 
 	// Add in artificial end of file symbol
+	if (frequencyTable.count(EOF)) cout << "found EOF\n";
 	frequencyTable[EOF] = 1;
 
 	if (DISPLAY_FREQUENCY_TABLE){
@@ -33,16 +32,10 @@ void Huffman::buildHuffman(fstream & input)
 		}
 		cout << "Total sum of symbols: " << sum << "\n";
 	}
-
-	// Reset pointer in filestream
-	input.clear();
-	input.seekg(0);
 	
 	// Create leaf Nodes for each char
-
-
 	priority_queue<Node*, vector<Node*>, MyComparator > pq;
-	for (auto it = frequencyTable.begin(); it == frequencyTable.end(); ++it){
+	for (auto it = frequencyTable.begin(); it != frequencyTable.end(); ++it){
 		pq.push(new Node(it->first, it->second));
 	}
 
@@ -111,7 +104,7 @@ void Huffman::displayTree()
 void Huffman::displayTable() {
 	cout << "Huffman Encoding Table\n";
 	cout << "-------------------\n\n";
-	for ( auto it = encodingTable.begin(); it != encodingTable.end(); ++it){
+	for (auto it = encodingTable.begin(); it != encodingTable.end(); ++it){
 		cout << it->first << ": ";
 		it->second.displayBits();
 		cout << "\n";
@@ -136,7 +129,7 @@ Huffman::Bits Huffman::encodeTree(NodePointer np, Bits BITS){
 	return returnBITS;
 };
 
-void Huffman::encode(fstream & input, fstream & output)
+void Huffman::encode(vector<char> & input, fstream & output)
 {
 	Bits BITS = Bits();
 	char charToAdd;
@@ -149,12 +142,8 @@ void Huffman::encode(fstream & input, fstream & output)
 	BITS.mergeBits(encodeTree(rootNode, Bits()));
 
 	// Encode message
-	while (input.good())
-	{
-		char c = input.get();
-		if (input.good()) {
-			BITS.mergeBits(encodingTable[c]);
-		}
+	for (int i = 0; i < input.size(); i++){
+		BITS.mergeBits(encodingTable[input.at(i)]);
 	}
 
 	// Add artificial end of symbol
@@ -180,21 +169,17 @@ void Huffman::buildDecodingTree(NodePointer np, Bits & BITS) {
 	}
 }
 
-void Huffman::decode(fstream & input, fstream & output)
+void Huffman::decode(vector<char> & input, fstream & output)
 {
 	Bits BITS = Bits();
 
 	// PROBLEM IS HERE
-	while (input.good())
-	{
-		char c = input.get();
-		if (input.good()) {
-			BITS.addChar(c);
-		}
+	for (int i = 1; i < input.size(); i++){
+		BITS.addChar(input.at(i));
 	}
 
 	buildDecodingTree(rootNode, BITS);
-	displayTree();
+	//displayTree();
 
 	NodePointer pointer = rootNode;
 	while (1){
