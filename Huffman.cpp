@@ -5,8 +5,6 @@
 #include <vector>
 #include <bitset>
 #include <unordered_map>
-#include <cstdlib>
-
 using namespace std;
 #include "Huffman.h"
 #define EOF 3

@@ -7,7 +7,7 @@
 using namespace std;
 #include "Lempzev.h"
 
-#define SHOW_TOKEN_LIST true
+#define SHOW_TOKEN_LIST false
 
 // helper method to shift the window forward
 // during decoding
@@ -117,8 +117,7 @@ void Lempzev::encode(vector<char> & input, fstream & output, int variation)
 			slide(window, input, inputPointer, bestLength);
 		}
 		else {
-			char charToAdd = window.at(lookAheadIndex);
-			t = Token(0, 1, charToAdd);
+			t = Token(0, 1, window.at(lookAheadIndex));
 			slide(window, input, inputPointer, 1);
 		}
 
@@ -133,13 +132,14 @@ void Lempzev::encode(vector<char> & input, fstream & output, int variation)
 			if (tokens.size() == 0)
 				tokens.push_back(t);
 			else {
-				//Check if the last token entered was a double
-				if (tokens.back().isDouble)
-					// If it was, just push in the new token
-					tokens.push_back(t);
-				else
-					// Otherwise, we're going to merge the new tokens!
+				//Check if the last token was triple and has space
+				if (!tokens.back().isDouble && tokens.back().chars.size() < 15)
+					// If it was, merge to that token
 					tokens.back().mergeToken(t);
+				else
+					// Otherwise, simply push back new token
+					tokens.push_back(t);
+					
 			}
 		}
 	}
@@ -189,8 +189,6 @@ void Lempzev::encode(vector<char> & input, fstream & output, int variation)
 		}
 	}
 
-	BITS.displayBits();
-
 	// Convert binary bits into chars to be transferred back into string
 	while (BITS.good()){
 		output.put(BITS.getChar());
@@ -224,31 +222,23 @@ void Lempzev::decode(vector<char> & input, fstream & output, int variation)
 
 	while (1) {
 		int code = BITS.getInt(4);
-		cout << "code/len = " << code << "\n";
 		if (code > 0){
 			int len = code + 1;
-			cout << "len = " << len << "\n";
 			int offset = BITS.getInt(numOffsetBits);
-			cout << "offset = " << offset << "\n";
-			cout << "charSeq = ";
 			for (int i = 0; i < len; i++){
 				window.at(lookAheadIndex + i) = window.at(lookAheadIndex + i - offset);
 				output.put(window.at(lookAheadIndex + i));
-				cout << window.at(lookAheadIndex + i);
 			}
-			cout << "\n";
 			shift(window, len);
 		}
 		else {
 			int strlen = BITS.getInt(4);
-			cout << "strlen = " << strlen << "\n";
 			if (strlen == 0) {
 				return;
 			}
 			else {
 				for (int i = 0; i < strlen; i++) {
 					char tempC = BITS.getChar();
-					cout << "charOutput = " << tempC << "\n";
 					window.at(lookAheadIndex + i) = tempC;
 					output.put(window.at(lookAheadIndex + i));
 				}

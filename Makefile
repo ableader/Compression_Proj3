@@ -1,15 +1,2 @@
-CXXFLAGS =	-O2 -g -Wall -fmessage-length=0
-
-OBJS =		Compression_Lab3.o
-
-LIBS =
-
-TARGET =	Compression_Lab3
-
-$(TARGET):	$(OBJS)
-	$(CXX) -o $(TARGET) $(OBJS) $(LIBS)
-
-all:	$(TARGET)
-
-clean:
-	rm -f $(OBJS) $(TARGET)
+Project3Compression: main.cpp Lempzev.cpp Huffman.cpp Lempzev.h Huffman.h
+	gcc -o Project3Compression main.cpp Lempzev.cpp Huffman.cpp -I.

@@ -1,8 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
-#include <cstdlib>
-#include <cmath>
 #ifndef HUFFMAN
 #define HUFFMAN
 
@@ -111,7 +109,7 @@ private:
 				for (int i = 1; i < 8; i++)
 				{
 					if (bits[i])
-						c += pow(2.0, 7-i);
+						c += pow(2, 7-i);
 				}
 
 				return c;
@@ -134,7 +132,7 @@ private:
 			}
 
 			for (int i = 6; i >= 0; i--){
-				int currentPower = pow(2.0, i);
+				int currentPower = pow(2, i);
 				if (c >= currentPower){
 					addBit(1);
 					c = c - currentPower;

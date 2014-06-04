@@ -214,12 +214,12 @@ public:
 	void decode(vector<char> & input, fstream & output, int variation);
 
 private:
-	unordered_map<char, Bits> encodingTable;
+	std::tr1::unordered_map<char, Bits> encodingTable;
 };
 
 // Constructor for Lempzev
 inline Lempzev::Lempzev()
 {
-
+	encodingTable = std::tr1::unordered_map<char, Bits>();
 }
 #endif
