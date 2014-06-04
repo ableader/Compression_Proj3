@@ -11,8 +11,8 @@ using namespace std;
 #include "Huffman.h"
 #include "Lempzev.h"
 
-#define LOOP_TIMES 1
-#define SHOW_HUFFMAN_TREE true
+#define SHOW_OUTPUT_STREAM true
+#define SHOW_HUFFMAN_TREE false
 #define SHOW_ENCODING_TABLE false
 
 void createFile(string name){
@@ -82,9 +82,9 @@ int main()
 				// and input the content into the file
 				infile.open(filename1);
 				infile << input;
-				infile.close();
-				infile.open(filename1);
 			}
+			infile.close();
+			infile.open(filename1, ios::binary | ios::out | ios::in | ios::ate);
 
 			// Create a second file to take in the output of whatever operation we perform
 			filename2 = filename1 + "-c";
@@ -103,8 +103,6 @@ int main()
 			clock_t begin, end;
 			begin = clock();
 
-			// Loop for timing accuracy purposes
-			// for (int i = 0; i < LOOP_TIMES; i++) {
 			// HUFF
 			cout << "\n";
 			if (command == "HUFF"){
@@ -152,7 +150,6 @@ int main()
 					cout << "File does not match available decompression types.\n";
 				}
 			}
-			//}
 
 			// Stop timer
 			end = clock();
@@ -162,8 +159,28 @@ int main()
 			infile.close();
 			outfile.close();
 
+
+			// If user wants to see output stream, we open outfile and display result
+			if (SHOW_OUTPUT_STREAM) {
+				outfile.open(filename2, ios::binary | ios::out | ios::in | ios::ate);
+
+				// Prepare vector of chars to work with
+				ifstream::pos_type pos = outfile.tellg();
+				vector<char>  charString(pos);
+
+				outfile.seekg(0, ios::beg);
+				outfile.read(&charString[0], pos);
+
+				cout << "Output Stream:\n";
+				for (int i = 0; i < charString.size(); i++){
+					cout << charString.at(i);
+				}
+				cout << "\n\n";
+				outfile.close();
+			}
+
 			// Analysis of result of program
-			float time_elapsed = (double)((end - begin) / CLOCKS_PER_SEC) / LOOP_TIMES;
+			float time_elapsed = (double)((end - begin) / CLOCKS_PER_SEC);
 			float infileSize;
 			float outfileSize;
 			float percentChange;
